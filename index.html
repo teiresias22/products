@@ -8,30 +8,42 @@
   <script>
     window.onload = function () {
       var deeplink = "tesla://my_products_screen";
-
+  
       var playStore = "https://play.google.com/store/apps/details?id=com.teslamotors.tesla";
       var appStore  = "https://apps.apple.com/app/id582007913";
-
+      var webFallback = "https://www.tesla.com/app";
+  
       var isAndroid = /Android/i.test(navigator.userAgent);
       var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-      var start = Date.now();
-
-      window.location.href = deeplink;
-
-      setTimeout(function () {
-        var elapsed = Date.now() - start;
-
-        if (elapsed < 2000) {
+  
+      // 딥링크 시도
+      var iframe = document.createElement("iframe");
+      iframe.style.display = "none";
+      iframe.src = deeplink;
+      document.body.appendChild(iframe);
+  
+      // 안정적으로 앱 감지를 위해 2.5초로 증가
+      var fallbackDelay = 2500;
+  
+      var timer = setTimeout(function () {
+        var isHidden = document.hidden || document.webkitHidden;
+  
+        if (!isHidden) {
           if (isAndroid) {
             window.location.href = playStore;
           } else if (isIOS) {
             window.location.href = appStore;
           } else {
-            window.location.href = "https://www.tesla.com/app";
+            window.location.href = webFallback;
           }
         }
-      }, 800);
+      }, fallbackDelay);
+  
+      document.addEventListener("visibilitychange", function () {
+        if (document.hidden || document.webkitHidden) {
+          clearTimeout(timer);
+        }
+      });
     };
   </script>
 </head>
